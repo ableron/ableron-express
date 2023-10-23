@@ -1,0 +1,77 @@
+{
+  "name": "ableron-express",
+  "version": "0.0.1",
+  "description": "Express Middleware for Ableron Server Side UI Composition",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=19"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "tsc -p tsconfig.json && move-file dist/esm/index.js dist/esm/index.mjs",
+    "build:cjs": "tsc -p tsconfig/tsconfig-cjs.json",
+    "build:types": "tsc -p tsconfig/tsconfig-types.json",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "prettier": "prettier . --write",
+    "test": "jest --no-cache",
+    "test:cov": "jest --coverage --no-cache --silent"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "ableron",
+    "express",
+    "ssi",
+    "server-side-includes",
+    "ui-composition",
+    "dynamic-ui-composition"
+  ],
+  "author": "Torsten Blasche <dev@t-blasche.de>",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ableron/ableron-express",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ableron/ableron-express.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ableron/ableron-express/issues"
+  },
+  "dependencies": {
+    "ableron": "0.0.7"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.20",
+    "@types/jest": "29.5.6",
+    "@typescript-eslint/eslint-plugin": "6.9.0",
+    "@typescript-eslint/parser": "6.9.0",
+    "eslint": "8.52.0",
+    "eslint-config-prettier": "9.0.0",
+    "fastify": "4.24.3",
+    "jest": "29.7.0",
+    "move-file-cli": "3.0.0",
+    "prettier": "3.0.3",
+    "rimraf": "5.0.5",
+    "ts-jest": "29.1.1",
+    "ts-loader": "9.5.0",
+    "typescript": "5.2.2"
+  }
+}
