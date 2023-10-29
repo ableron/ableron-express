@@ -13,14 +13,13 @@ npm install ableron-express
 ```
 
 ### Usage
-```shell
+
+```js
 import express from 'express';
-import { ableronMiddleware } from 'ableron-express';
+import { createAbleronMiddleware } from 'ableron-express';
 
 const app = express();
-app.use(ableronMiddleware({
-  logger: console
-}));
+app.use(createAbleronMiddleware({}, console));
 ```
 
 ### Configuration Options
