@@ -13,10 +13,10 @@ export function createAbleronMiddleware(ableronConfig: AbleronConfig, logger: Ab
         return (
           !(res.statusCode >= 100 && res.statusCode <= 199) &&
           !(res.statusCode >= 300 && res.statusCode <= 399) &&
-          /^text\/html/i.test(res.getHeader('content-type'))
+          /^text\/html/i.test(String(res.getHeader('content-type')))
         );
       },
-      intercept: (body, send) => {
+      intercept: (body: string, send: (body: string) => void) => {
         try {
           ableron
             .resolveIncludes(body, req.headers)
@@ -29,18 +29,14 @@ export function createAbleronMiddleware(ableronConfig: AbleronConfig, logger: Ab
                 transclusionResult.calculateCacheControlHeaderValueByResponseHeaders(res.getHeaders())
               );
               res.setHeader('Content-Length', transclusionResult.getContent().length);
-
-              if (transclusionResult.getStatusCodeOverride()) {
-                res.status(transclusionResult.getStatusCodeOverride());
-              }
-
+              res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
               send(transclusionResult.getContent());
             })
             .catch((e) => {
               logger.error(`Unable to perform ableron UI composition: ${e.message}`);
               send(body);
             });
-        } catch (e) {
+        } catch (e: any) {
           logger.error(`Unable to perform ableron UI composition: ${e.message}`);
           send(body);
         }

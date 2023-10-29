@@ -56,7 +56,7 @@
     "url": "https://github.com/ableron/ableron-express/issues"
   },
   "dependencies": {
-    "ableron": "0.0.7",
+    "ableron": "1.0.1",
     "express-interceptor": "^1.2.0"
   },
   "devDependencies": {
