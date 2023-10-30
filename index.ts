@@ -2,9 +2,9 @@ import { Ableron, AbleronConfig, AbstractLogger } from '@ableron/ableron';
 import { Request, Response } from 'express';
 const interceptor = require('express-interceptor');
 
-export function createAbleronMiddleware(ableronConfig: AbleronConfig, logger: AbstractLogger): any {
-  logger = logger || console;
-  const ableron = new Ableron(ableronConfig);
+export function createAbleronMiddleware(ableronConfig?: AbleronConfig, providedLogger?: AbstractLogger): any {
+  const ableron = new Ableron(ableronConfig || {});
+  const logger = providedLogger || console;
 
   return interceptor((req: Request, res: Response) => {
     return {
