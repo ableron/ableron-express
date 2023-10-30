@@ -1,6 +1,5 @@
-import { Ableron, AbleronConfig } from 'ableron';
+import { Ableron, AbleronConfig, AbstractLogger } from '@ableron/ableron';
 import { Request, Response } from 'express';
-import { AbstractLogger } from 'ableron/dist/types/abstract-logger';
 const interceptor = require('express-interceptor');
 
 export function createAbleronMiddleware(ableronConfig: AbleronConfig, logger: AbstractLogger): any {
@@ -28,16 +27,16 @@ export function createAbleronMiddleware(ableronConfig: AbleronConfig, logger: Ab
                 'Cache-Control',
                 transclusionResult.calculateCacheControlHeaderValueByResponseHeaders(res.getHeaders())
               );
-              res.setHeader('Content-Length', transclusionResult.getContent().length);
+              res.setHeader('Content-Length', Buffer.byteLength(transclusionResult.getContent()));
               res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
               send(transclusionResult.getContent());
             })
             .catch((e) => {
-              logger.error(`Unable to perform ableron UI composition: ${e.message}`);
+              logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
               send(body);
             });
         } catch (e: any) {
-          logger.error(`Unable to perform ableron UI composition: ${e.message}`);
+          logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
           send(body);
         }
       }

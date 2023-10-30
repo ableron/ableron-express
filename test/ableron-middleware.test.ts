@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Request, Response } from 'express';
-import { AbleronConfig } from 'ableron';
+import { AbleronConfig } from '@ableron/ableron';
 import { createAbleronMiddleware } from '../index';
 const request = require('supertest');
 

@@ -16,7 +16,7 @@ npm i @ableron/express
 
 ```js
 import express from 'express';
-import { createAbleronMiddleware } from 'ableron-express';
+import { createAbleronMiddleware } from '@ableron/express';
 
 const app = express();
 app.use(createAbleronMiddleware({}, console));
