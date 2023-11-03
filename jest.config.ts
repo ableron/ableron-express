@@ -1,4 +1,6 @@
-module.exports = {
+import type { Config } from 'jest';
+
+const config: Config = {
   roots: ['<rootDir>/test'],
   transform: {
     '\\.(ts|tsx)$': [
@@ -9,3 +11,5 @@ module.exports = {
     ]
   }
 };
+
+export default config;

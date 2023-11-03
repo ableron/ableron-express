@@ -1,11 +1,10 @@
 import express from 'express';
 import type { Request, Response } from 'express';
-import { AbleronConfig } from '@ableron/ableron';
-import { createAbleronMiddleware } from '../index';
+import { createAbleronMiddleware } from '../src';
 const request = require('supertest');
 
 describe('Ableron Express Middleware', () => {
-  const ableronMiddleware = createAbleronMiddleware(new AbleronConfig(), console);
+  const ableronMiddleware = createAbleronMiddleware();
 
   it.each([
     [

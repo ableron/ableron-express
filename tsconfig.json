@@ -1,8 +1,15 @@
 {
-  "extends": "./tsconfig/tsconfig-base.json",
+  "include": ["./src/index.ts"],
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/esm"
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist"
   }
 }
