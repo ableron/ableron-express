@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import { createAbleronMiddleware } from '../src';
-const request = require('supertest');
+import request from 'supertest';
 
 describe('Ableron Express Middleware', () => {
   const ableronMiddleware = createAbleronMiddleware();

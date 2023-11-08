@@ -12,7 +12,7 @@ Express Middleware for Ableron Server Side UI Composition
 npm i @ableron/express
 ```
 
-### Usage
+## Usage
 
 ```js
 import express from 'express';
@@ -22,7 +22,14 @@ const app = express();
 app.use(createAbleronMiddleware({}, console));
 ```
 
-### Configuration Options
+## Configuration Options
+
+```ts
+import { createAbleronMiddleware } from '@ableron/express';
+createAbleronMiddleware({
+  // apply your configuration here
+});
+```
 
 - `enabled`: Whether UI composition is enabled. Defaults to `true`
 - `fragmentRequestTimeout`: Timeout for requesting fragments. Defaults to `3 seconds`
