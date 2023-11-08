@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import express from 'express';
 import type { Request, Response } from 'express';
 import { createAbleronMiddleware } from '../src';
