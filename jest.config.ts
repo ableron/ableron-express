@@ -2,14 +2,17 @@ import type { Config } from 'jest';
 
 const config: Config = {
   transform: {
-    '\\.(js|ts)$': ['ts-jest', {
-      useESM: true
-    }]
+    '\\.(js|ts)$': [
+      'ts-jest',
+      {
+        useESM: true
+      }
+    ]
   },
   moduleNameMapper: {
     '^(\\.\\.?\\/.+)\\.js$': '$1'
   },
-  extensionsToTreatAsEsm: [".ts"]
+  extensionsToTreatAsEsm: ['.ts']
 };
 
 export default config;
