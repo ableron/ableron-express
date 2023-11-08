@@ -51,5 +51,11 @@
     "ts-loader": "9.5.0",
     "typescript": "5.2.2",
     "vitest": "^0.34.6"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "trailingComma": "none"
   }
 }
