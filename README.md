@@ -19,16 +19,27 @@ import express from 'express';
 import { createAbleronMiddleware } from '@ableron/express';
 
 const app = express();
-app.use(createAbleronMiddleware({}, console));
+app.use(createAbleronMiddleware());
 ```
 
 ## Configuration Options
 
-```ts
-import { createAbleronMiddleware } from '@ableron/express';
-createAbleronMiddleware({
-  // apply your configuration here
-});
-```
-
 Configuration options see [ableron-js](https://github.com/ableron/ableron-js#configuration-options)
+
+```js
+import express from 'express';
+import { createAbleronMiddleware } from '@ableron/express';
+
+const app = express();
+const logger = yourLogger() || console;
+app.use(
+  createAbleronMiddleware(
+    {
+      // apply your configuration here
+      enabled: true
+      // ...
+    },
+    logger
+  )
+);
+```
