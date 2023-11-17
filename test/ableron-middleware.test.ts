@@ -9,7 +9,7 @@ describe('Ableron Express Middleware', () => {
 
   it.each([
     [
-      'body set via multiple res.write',
+      'body set via multiple res.write with content type set before first res.write',
       (res: Response) => {
         res
           .status(200)
@@ -17,6 +17,15 @@ describe('Ableron Express Middleware', () => {
           .write('<ableron-include src="unknown">fallback');
         res.write('</ableron-include>');
         res.end();
+      }
+    ],
+    [
+      'body set via multiple res.write with content type set after first res.write',
+      (res: Response) => {
+        res.write('<ableron-include src="unknown">');
+        res.write('fallback');
+        res.write('</ableron-include>');
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end();
       }
     ],
     [
@@ -38,6 +47,84 @@ describe('Ableron Express Middleware', () => {
     [
       'body set via res.send with content-type header set implicitly',
       (res: Response) => res.status(200).send('<ableron-include src="unknown">fallback</ableron-include>')
+    ],
+    [
+      'mixed res.write with string and buffer',
+      (res: Response) => {
+        res.write('<ableron-include src="unknown">');
+        res.write(Buffer.from('fallback'));
+        res.write('</ableron-include>');
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end();
+      }
+    ],
+    [
+      'mixed res.write with string and buffer and given encoding',
+      (res: Response) => {
+        res.write(Buffer.from('<ableron-include src="unknown">'), 'binary');
+        res.write('ZmFsbGJhY2s=', 'base64');
+        res.write(Buffer.from('PC9hYmxlcm9uLWluY2x1ZGU+', 'base64'));
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end();
+      }
+    ],
+    [
+      'mixed res.write with string and buffer and given callbacks',
+      (res: Response) => {
+        res.write(Buffer.from('<ableron-include src="unknown">'), () => null);
+        res.write('fallback', () => null);
+        res.write(Buffer.from('PC9hYmxlcm9uLWluY2x1ZGU+', 'base64'), () => null);
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end();
+      }
+    ],
+    [
+      'res.write called with invalid encoding',
+      (res: Response) => {
+        res.write('<ableron-include src="unknown">', 'utf8');
+        // @ts-ignore
+        res.write('fallback', 'unknown');
+        res.write('</ableron-include>', 'latin1');
+        res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end();
+      }
+    ],
+    [
+      'res.end with callback',
+      (res: Response) => {
+        res.write('<ableron-include src="unknown">fallback</ableron-include>');
+        res
+          .status(200)
+          .setHeader('Content-Type', 'text/html; charset=utf-8')
+          .end(() => null);
+      }
+    ],
+    [
+      'res.end with buffer chunk and callback',
+      (res: Response) => {
+        res
+          .status(200)
+          .setHeader('Content-Type', 'text/html; charset=utf-8')
+          .end(Buffer.from('<ableron-include src="unknown">fallback</ableron-include>'), () => undefined);
+      }
+    ],
+    [
+      'res.end with string chunk and callback',
+      (res: Response) => {
+        res
+          .status(200)
+          .setHeader('Content-Type', 'text/html; charset=utf-8')
+          .end('<ableron-include src="unknown">fallback</ableron-include>', () => undefined);
+      }
+    ],
+    [
+      'res.end with string chunk, encoding and callback',
+      (res: Response) => {
+        res
+          .status(200)
+          .setHeader('Content-Type', 'text/html; charset=utf-8')
+          .end(
+            'PGFibGVyb24taW5jbHVkZSBzcmM9InVua25vd24iPmZhbGxiYWNrPC9hYmxlcm9uLWluY2x1ZGU+',
+            'base64',
+            () => undefined
+          );
+      }
     ]
   ])('should handle %s', async (caseDescription: string, generateResponse) => {
     // given
@@ -138,6 +225,27 @@ describe('Ableron Express Middleware', () => {
     expect(response.headers['content-length']).toBe(String(originalBody.length));
     expect(response.status).toEqual(301);
     expect(response.text).toEqual(originalBody);
+  });
+
+  it('should handle multibyte characters', async () => {
+    // given
+    const server = express()
+      .use(ableronMiddleware)
+      .get('/', (req: Request, res: Response) => {
+        res.write(Buffer.from([0xe2]));
+        res.write(Buffer.from([0x98]));
+        res.write(Buffer.from([0xba]));
+        res.setHeader('content-type', 'text/html; charset=utf-8').end();
+      });
+
+    // when
+    const response = await request(server).get('/');
+
+    // then
+    expect(response.headers['content-type']).toBe('text/html; charset=utf-8');
+    expect(response.headers['content-length']).toBe('3');
+    expect(response.status).toEqual(200);
+    expect(response.text).toEqual('☺');
   });
 
   function getFragmentBaseUrl(req: Request): string {

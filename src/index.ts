@@ -1,24 +1,71 @@
 import { Ableron, AbleronConfig, AbstractLogger } from '@ableron/ableron';
-import { Request, Response } from 'express';
-import interceptor from 'express-interceptor';
+import { NextFunction, Request, Response } from 'express';
 
 export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, providedLogger?: AbstractLogger): any {
   const ableron = new Ableron(ableronConfig || {});
   const logger = providedLogger || console;
 
-  return interceptor((req: Request, res: Response) => {
-    return {
-      isInterceptable: () => {
-        return (
+  return (req: Request, res: Response, next: NextFunction) => {
+    const originalEnd = res.end;
+    const originalWrite = res.write;
+    const chunks: Buffer[] = [];
+    let isIntercepting = false;
+    let isFirstWrite = true;
+
+    function intercept(chunk, encoding) {
+      if (isFirstWrite) {
+        isFirstWrite = false;
+        isIntercepting =
           !(res.statusCode >= 100 && res.statusCode <= 199) &&
           !(res.statusCode >= 300 && res.statusCode <= 399) &&
-          /^text\/html/i.test(String(res.getHeader('content-type')))
+          (!res.getHeader('content-type') || /^text\/html/i.test(String(res.getHeader('content-type'))));
+      }
+
+      if (isIntercepting && chunk && (typeof chunk === 'string' || Buffer.isBuffer(chunk))) {
+        chunks.push(
+          Buffer.isBuffer(chunk)
+            ? chunk
+            : Buffer.from(chunk, typeof encoding === 'string' && Buffer.isEncoding(encoding) ? encoding : 'utf8')
         );
-      },
-      intercept: (body: string, send: (body: string) => void) => {
+      }
+
+      return isIntercepting;
+    }
+
+    // @ts-ignore
+    res.write = (
+      chunk: any,
+      encodingOrCallback?: BufferEncoding | ((error: Error | null | undefined) => void),
+      callback?: (error: Error | null | undefined) => void
+    ) => {
+      if (!intercept(chunk, encodingOrCallback)) {
+        // @ts-ignore
+        originalWrite.call(res, chunk, encodingOrCallback, callback);
+      }
+    };
+
+    // @ts-ignore
+    res.end = function (
+      chunkOrCallback?: any,
+      encodingOrCallback?: BufferEncoding | (() => void),
+      callback?: () => void
+    ) {
+      if (intercept(chunkOrCallback, encodingOrCallback)) {
+        isIntercepting = false;
+        const originalBody = Buffer.concat(chunks).toString('utf8');
+        let callbackToPass;
+
+        if (typeof chunkOrCallback === 'function') {
+          callbackToPass = chunkOrCallback;
+        } else if (typeof encodingOrCallback === 'function') {
+          callbackToPass = encodingOrCallback;
+        } else {
+          callbackToPass = callback;
+        }
+
         try {
           ableron
-            .resolveIncludes(body, req.headers)
+            .resolveIncludes(originalBody, req.headers)
             .then((transclusionResult) => {
               transclusionResult
                 .getResponseHeadersToPass()
@@ -29,17 +76,24 @@ export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, 
               );
               res.setHeader('Content-Length', Buffer.byteLength(transclusionResult.getContent()));
               res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
-              send(transclusionResult.getContent());
+              originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
             })
             .catch((e) => {
               logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
-              send(body);
+              originalEnd.call(res, originalBody, 'utf8', callbackToPass);
             });
         } catch (e: any) {
           logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
-          send(body);
+          originalEnd.call(res, originalBody, 'utf8', callbackToPass);
         }
+      } else {
+        // @ts-ignore
+        originalEnd.apply(res, Array.from(arguments));
       }
     };
-  });
+
+    if (next) {
+      next();
+    }
+  };
 }
