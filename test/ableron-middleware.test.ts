@@ -189,11 +189,10 @@ describe('Ableron Express Middleware', () => {
 
   it('should skip transclusion when content-type ist not text/html', async () => {
     // given
-    let originalBody = '';
+    const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
       .use(ableronMiddleware)
       .get('/', (req: Request, res: Response) => {
-        originalBody = `<ableron-include src="${getFragmentBaseUrl(req)}/fragment">fallback</ableron-include>`;
         res.status(200).setHeader('content-type', 'text/plain').send(originalBody);
       });
 
@@ -209,11 +208,10 @@ describe('Ableron Express Middleware', () => {
 
   it('should skip transclusion when status code is 3xx', async () => {
     // given
-    let originalBody = '';
+    const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
       .use(ableronMiddleware)
       .get('/', (req: Request, res: Response) => {
-        originalBody = `<ableron-include src="${getFragmentBaseUrl(req)}/fragment">fallback</ableron-include>`;
         res.status(301).send(originalBody);
       });
 
@@ -224,6 +222,26 @@ describe('Ableron Express Middleware', () => {
     expect(response.headers['content-type']).toBe('text/html; charset=utf-8');
     expect(response.headers['content-length']).toBe(String(originalBody.length));
     expect(response.status).toEqual(301);
+    expect(response.text).toEqual(originalBody);
+  });
+
+  it('should skip transclusion when content type is set after first write to other than text/html', async () => {
+    // given
+    const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
+    const server = express()
+      .use(ableronMiddleware)
+      .get('/', (req: Request, res: Response) => {
+        res.write(originalBody);
+        res.setHeader('content-type', 'text/plain').send();
+      });
+
+    // when
+    const response = await request(server).get('/');
+
+    // then
+    expect(response.headers['content-type']).toBe('text/plain');
+    expect(response.headers['content-length']).toBe(String(originalBody.length));
+    expect(response.status).toEqual(200);
     expect(response.text).toEqual(originalBody);
   });
 
@@ -246,6 +264,48 @@ describe('Ableron Express Middleware', () => {
     expect(response.headers['content-length']).toBe('3');
     expect(response.status).toEqual(200);
     expect(response.text).toEqual('☺');
+  });
+
+  it('should handle res.write calls correctly when not intercepting the response - callback as 2nd argument', async () => {
+    // given
+    const server = express()
+      .use(ableronMiddleware)
+      .get('/', (req: Request, res: Response) => {
+        res.setHeader('content-type', 'text/plain');
+        res.write('callback', () => {
+          res.write(' called correctly');
+          res.end();
+        });
+      });
+
+    // when
+    const response = await request(server).get('/');
+
+    // then
+    expect(response.headers['content-type']).toBe('text/plain');
+    expect(response.status).toEqual(200);
+    expect(response.text).toEqual('callback called correctly');
+  });
+
+  it('should handle res.write calls correctly when not intercepting the response - callback as 3rd argument', async () => {
+    // given
+    const server = express()
+      .use(ableronMiddleware)
+      .get('/', (req: Request, res: Response) => {
+        res.setHeader('content-type', 'text/plain');
+        res.write('callback', 'utf8', () => {
+          res.write(' called correctly');
+          res.end();
+        });
+      });
+
+    // when
+    const response = await request(server).get('/');
+
+    // then
+    expect(response.headers['content-type']).toBe('text/plain');
+    expect(response.status).toEqual(200);
+    expect(response.text).toEqual('callback called correctly');
   });
 
   function getFragmentBaseUrl(req: Request): string {

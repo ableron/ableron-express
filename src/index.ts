@@ -18,7 +18,7 @@ export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, 
         isIntercepting =
           !(res.statusCode >= 100 && res.statusCode <= 199) &&
           !(res.statusCode >= 300 && res.statusCode <= 399) &&
-          (!res.getHeader('content-type') || /^text\/html/i.test(String(res.getHeader('content-type'))));
+          (!res.getHeader('content-type') || isHtmlResponse(res));
       }
 
       if (isIntercepting && chunk && (typeof chunk === 'string' || Buffer.isBuffer(chunk))) {
@@ -32,15 +32,19 @@ export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, 
       return isIntercepting;
     }
 
+    function isHtmlResponse(res: Response) {
+      return /^text\/html/i.test(String(res.getHeader('content-type')));
+    }
+
     // @ts-ignore
-    res.write = (
-      chunk: any,
+    res.write = function (
+      chunk: string | Buffer | Uint8Array,
       encodingOrCallback?: BufferEncoding | ((error: Error | null | undefined) => void),
       callback?: (error: Error | null | undefined) => void
-    ) => {
+    ) {
       if (!intercept(chunk, encodingOrCallback)) {
         // @ts-ignore
-        originalWrite.call(res, chunk, encodingOrCallback, callback);
+        originalWrite.apply(res, Array.from(arguments));
       }
     };
 
@@ -63,27 +67,31 @@ export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, 
           callbackToPass = callback;
         }
 
-        try {
-          ableron
-            .resolveIncludes(originalBody, req.headers)
-            .then((transclusionResult) => {
-              transclusionResult
-                .getResponseHeadersToPass()
-                .forEach((headerValue, headerName) => res.setHeader(headerName, headerValue));
-              res.setHeader(
-                'Cache-Control',
-                transclusionResult.calculateCacheControlHeaderValueByResponseHeaders(res.getHeaders())
-              );
-              res.setHeader('Content-Length', Buffer.byteLength(transclusionResult.getContent()));
-              res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
-              originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
-            })
-            .catch((e) => {
-              logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
-              originalEnd.call(res, originalBody, 'utf8', callbackToPass);
-            });
-        } catch (e: any) {
-          logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+        if (isHtmlResponse(res)) {
+          try {
+            ableron
+              .resolveIncludes(originalBody, req.headers)
+              .then((transclusionResult) => {
+                transclusionResult
+                  .getResponseHeadersToPass()
+                  .forEach((headerValue, headerName) => res.setHeader(headerName, headerValue));
+                res.setHeader(
+                  'Cache-Control',
+                  transclusionResult.calculateCacheControlHeaderValueByResponseHeaders(res.getHeaders())
+                );
+                res.setHeader('Content-Length', Buffer.byteLength(transclusionResult.getContent()));
+                res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
+                originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
+              })
+              .catch((e) => {
+                logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+                originalEnd.call(res, originalBody, 'utf8', callbackToPass);
+              });
+          } catch (e: any) {
+            logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+            originalEnd.call(res, originalBody, 'utf8', callbackToPass);
+          }
+        } else {
           originalEnd.call(res, originalBody, 'utf8', callbackToPass);
         }
       } else {

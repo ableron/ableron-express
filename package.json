@@ -1,6 +1,6 @@
 {
   "name": "@ableron/express",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Express Middleware for Ableron Server Side UI Composition",
   "type": "module",
   "main": "./dist/index.js",
