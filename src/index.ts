@@ -1,9 +1,8 @@
-import { Ableron, AbleronConfig, AbstractLogger } from '@ableron/ableron';
+import { Ableron, AbleronConfig, LoggerInterface } from '@ableron/ableron';
 import { NextFunction, Request, Response } from 'express';
 
-export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, providedLogger?: AbstractLogger): any {
-  const ableron = new Ableron(ableronConfig || {});
-  const logger = providedLogger || console;
+export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, logger?: LoggerInterface): any {
+  const ableron = new Ableron(ableronConfig || {}, logger);
 
   return (req: Request, res: Response, next: NextFunction) => {
     const originalEnd = res.end;
@@ -84,11 +83,11 @@ export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, 
                 originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
               })
               .catch((e) => {
-                logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+                ableron.getLogger().error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
                 originalEnd.call(res, originalBody, 'utf8', callbackToPass);
               });
           } catch (e: any) {
-            logger.error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+            ableron.getLogger().error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
             originalEnd.call(res, originalBody, 'utf8', callbackToPass);
           }
         } else {
