@@ -40,6 +40,6 @@ app.use(
 );
 ```
 
-## Configuration
+### Configuration
 
 Configuration options see [@ableron/ableron](https://github.com/ableron/ableron-js#configuration)
