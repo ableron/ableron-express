@@ -1,4 +1,4 @@
-# Ableron Express Middleware
+# @ableron/express
 
 [![Build Status](https://github.com/ableron/ableron-express/actions/workflows/test.yml/badge.svg)](https://github.com/ableron/ableron-express/actions/workflows/test.yml)
 [![npm version](https://badge.fury.io/js/@ableron%2Fexpress.svg)](https://badge.fury.io/js/@ableron%2Fexpress)
@@ -19,27 +19,27 @@ import express from 'express';
 import { createAbleronMiddleware } from '@ableron/express';
 
 const app = express();
+
+// default middleware (default settings, no logging)
 app.use(createAbleronMiddleware());
-```
 
-## Configuration Options
-
-Configuration options see [ableron-js](https://github.com/ableron/ableron-js#configuration-options)
-
-```js
-import express from 'express';
-import { createAbleronMiddleware } from '@ableron/express';
-
-const app = express();
-const logger = yourLogger() || console;
+// customized middleware (custom settings, custom logger)
 app.use(
   createAbleronMiddleware(
+    // optional config
     {
-      // apply your configuration here
-      enabled: true
+      fragmentRequestTimeoutMillis: 5000,
+      fragmentRequestHeadersToPass: ['X-ACME-Test-Groups', 'X-Correlation-ID'],
+      cacheVaryByRequestHeaders: ['X-ACME-Test-Groups'],
+      statsAppendToContent: true
       // ...
     },
-    logger
+    // optional logger
+    yourLogger() || console
   )
 );
 ```
+
+## Configuration
+
+Configuration options see [@ableron/ableron](https://github.com/ableron/ableron-js#configuration)

@@ -1,5 +1,5 @@
 import { Ableron, AbleronConfig, LoggerInterface } from '@ableron/ableron';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 export function createAbleronMiddleware(ableronConfig?: Partial<AbleronConfig>, logger?: LoggerInterface): any {
   const ableron = new Ableron(ableronConfig || {}, logger);
