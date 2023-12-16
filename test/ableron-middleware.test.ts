@@ -163,6 +163,24 @@ describe('Ableron Express Middleware', () => {
     expect(response.text).toEqual('fragment');
   });
 
+  it('should pass request headers to resolveIncludes()', async () => {
+    // given
+    const server = express()
+      .use(ableronMiddleware)
+      .get('/', (req: Request, res: Response) => {
+        res.status(200).send(`<ableron-include src="${getFragmentBaseUrl(req)}/fragment">fallback</ableron-include>`);
+      })
+      .get('/fragment', (req: Request, res: Response) => {
+        res.status(200).send(req.headers['user-agent']);
+      });
+
+    // when
+    const response = await request(server).get('/').set('User-Agent', 'test');
+
+    // then
+    expect(response.text).toEqual('test');
+  });
+
   it('should check content-type text/html case insensitive', async () => {
     // given
     const server = express()
@@ -187,7 +205,7 @@ describe('Ableron Express Middleware', () => {
     expect(response.text).toEqual('fragment');
   });
 
-  it('should skip transclusion when content-type ist not text/html', async () => {
+  it('should skip transclusion when content-type is not text/html', async () => {
     // given
     const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
