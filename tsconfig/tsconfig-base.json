@@ -1,0 +1,14 @@
+{
+  "include": ["../src"],
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022"
+  }
+}
