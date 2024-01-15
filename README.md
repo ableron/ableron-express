@@ -16,17 +16,13 @@ npm i @ableron/express
 
 ```js
 import express from 'express';
-import { createAbleronMiddleware } from '@ableron/express';
+import ableron from '@ableron/express';
 
 const app = express();
 
-// default middleware (default settings, no logging)
-app.use(createAbleronMiddleware());
-
-// customized middleware (custom settings, custom logger)
 app.use(
-  createAbleronMiddleware(
-    // optional config
+  ableron(
+    // custom settings (optional)
     {
       fragmentRequestTimeoutMillis: 5000,
       fragmentRequestHeadersToPass: ['X-ACME-Test-Groups', 'X-Correlation-ID'],
@@ -34,7 +30,7 @@ app.use(
       statsAppendToContent: true
       // ...
     },
-    // optional logger
+    // custom logger (optional). If no logger is provided, no logging happens at all
     yourLogger() || console
   )
 );

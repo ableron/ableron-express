@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import express from 'express';
 import type { Request, Response } from 'express';
-import { createAbleronMiddleware } from '../src';
+import ableron from '../src';
 import request from 'supertest';
 
 describe('Ableron Express Middleware', () => {
-  const ableronMiddleware = createAbleronMiddleware();
-
   it.each([
     [
       'body set via multiple res.write with content type set before first res.write',
@@ -129,7 +127,7 @@ describe('Ableron Express Middleware', () => {
   ])('should handle %s', async (caseDescription: string, generateResponse) => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => generateResponse(res));
 
     // when
@@ -145,7 +143,7 @@ describe('Ableron Express Middleware', () => {
   it('should apply transclusion', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.status(200).send(`<ableron-include src="${getFragmentBaseUrl(req)}/fragment">fallback</ableron-include>`);
       })
@@ -166,7 +164,7 @@ describe('Ableron Express Middleware', () => {
   it('should pass request headers to resolveIncludes()', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.status(200).send(`<ableron-include src="${getFragmentBaseUrl(req)}/fragment">fallback</ableron-include>`);
       })
@@ -184,7 +182,7 @@ describe('Ableron Express Middleware', () => {
   it('should check content-type text/html case insensitive', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res
           .status(200)
@@ -209,7 +207,7 @@ describe('Ableron Express Middleware', () => {
     // given
     const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.status(200).setHeader('content-type', 'text/plain').send(originalBody);
       });
@@ -228,7 +226,7 @@ describe('Ableron Express Middleware', () => {
     // given
     const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.status(301).send(originalBody);
       });
@@ -247,7 +245,7 @@ describe('Ableron Express Middleware', () => {
     // given
     const originalBody = `<ableron-include id="test">fallback</ableron-include>`;
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.write(originalBody);
         res.setHeader('content-type', 'text/plain').send();
@@ -266,7 +264,7 @@ describe('Ableron Express Middleware', () => {
   it('should handle multibyte characters', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.write(Buffer.from([0xe2]));
         res.write(Buffer.from([0x98]));
@@ -287,7 +285,7 @@ describe('Ableron Express Middleware', () => {
   it('should handle res.write calls correctly when not intercepting the response - callback as 2nd argument', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.setHeader('content-type', 'text/plain');
         res.write('callback', () => {
@@ -308,7 +306,7 @@ describe('Ableron Express Middleware', () => {
   it('should handle res.write calls correctly when not intercepting the response - callback as 3rd argument', async () => {
     // given
     const server = express()
-      .use(ableronMiddleware)
+      .use(ableron())
       .get('/', (req: Request, res: Response) => {
         res.setHeader('content-type', 'text/plain');
         res.write('callback', 'utf8', () => {
