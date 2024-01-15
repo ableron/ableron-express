@@ -39,7 +39,7 @@
   ],
   "author": "Torsten Blasche <dev@t-blasche.de>",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/ableron/ableron-express",
+  "homepage": "https://ableron.github.io/",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/ableron/ableron-express.git"
