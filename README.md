@@ -25,8 +25,8 @@ app.use(
     // custom settings (optional)
     {
       fragmentRequestTimeoutMillis: 5000,
-      fragmentRequestHeadersToPass: ['X-ACME-Test-Groups', 'X-Correlation-ID'],
-      cacheVaryByRequestHeaders: ['X-ACME-Test-Groups'],
+      fragmentAdditionalRequestHeadersToPass: ['X-Test-Groups'],
+      cacheVaryByRequestHeaders: ['X-Test-Groups'],
       statsAppendToContent: true
       // ...
     },
