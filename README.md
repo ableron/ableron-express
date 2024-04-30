@@ -14,6 +14,7 @@ npm i @ableron/express
 
 ## Usage
 
+Full example using ES Modules
 ```js
 import express from 'express';
 import ableron from '@ableron/express';
@@ -34,6 +35,16 @@ app.use(
     yourLogger() || console
   )
 );
+```
+
+Minimal example using CommonJS
+```js
+const express = require('express');
+const ableron = require('@ableron/express').default;
+
+const app = express();
+
+app.use(ableron());
 ```
 
 ### Configuration
