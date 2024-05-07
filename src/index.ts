@@ -83,11 +83,11 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
                 originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
               })
               .catch((e) => {
-                ableron.getLogger().error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+                ableron.getLogger().error(`[Ableron] Unable to perform UI composition: ${e.stack || e.message}`);
                 originalEnd.call(res, originalBody, 'utf8', callbackToPass);
               });
           } catch (e: any) {
-            ableron.getLogger().error(`Unable to perform ableron UI composition: ${e.stack || e.message}`);
+            ableron.getLogger().error(`[Ableron] Unable to perform UI composition: ${e.stack || e.message}`);
             originalEnd.call(res, originalBody, 'utf8', callbackToPass);
           }
         } else {
