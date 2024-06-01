@@ -3,6 +3,7 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import ableron from '../src';
 import request from 'supertest';
+import { LoggerInterface } from '@ableron/ableron';
 
 describe('Ableron Express Middleware', () => {
   it.each([
@@ -323,6 +324,33 @@ describe('Ableron Express Middleware', () => {
     expect(response.status).toEqual(200);
     expect(response.text).toEqual('callback called correctly');
   });
+
+  it.each([
+    [true, '[Ableron] Skipping UI composition (response status: 301, content-type: text/html; charset=utf-8)'],
+    [false, null]
+  ])(
+    'should not hook into response when Ableron is disabled',
+    async (ableronEnabled: boolean, expectedLogMessage?: string) => {
+      // given
+      let ableronSkippingUiCompositionLogMessage = null;
+      const catchDebugMessageLogger = {
+        debug: (msg) => {
+          ableronSkippingUiCompositionLogMessage = msg;
+        }
+      } as LoggerInterface;
+      const server = express()
+        .use(ableron({ enabled: ableronEnabled }, catchDebugMessageLogger))
+        .get('/', (req: Request, res: Response) => {
+          res.status(301).send('<ableron-include id="test">fallback</ableron-include>');
+        });
+
+      // when
+      await request(server).get('/');
+
+      // then
+      expect(ableronSkippingUiCompositionLogMessage).toBe(expectedLogMessage);
+    }
+  );
 
   function getFragmentBaseUrl(req: Request): string {
     return req.protocol + '://' + req.get('host');

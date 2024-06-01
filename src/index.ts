@@ -4,6 +4,12 @@ import type { NextFunction, Request, Response } from 'express';
 export default function ableron(config?: Partial<AbleronConfig>, logger?: LoggerInterface): any {
   const ableron = new Ableron(config || {}, logger);
 
+  if (!ableron.getConfig().enabled) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      next && next();
+    };
+  }
+
   return (req: Request, res: Response, next: NextFunction) => {
     const originalEnd = res.end;
     const originalWrite = res.write;
@@ -26,6 +32,16 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
             ? chunk
             : Buffer.from(chunk, typeof encoding === 'string' && Buffer.isEncoding(encoding) ? encoding : 'utf8')
         );
+      }
+
+      if (!isIntercepting) {
+        ableron
+          .getLogger()
+          .debug(
+            `[Ableron] Skipping UI composition (response status: ${res.statusCode}, content-type: ${res.getHeader(
+              'content-type'
+            )})`
+          );
       }
 
       return isIntercepting;
