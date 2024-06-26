@@ -52,3 +52,12 @@ app.use(ableron());
 ### Configuration
 
 Configuration options see [@ableron/ableron](https://github.com/ableron/ableron-js#configuration)
+
+## Contributing
+
+All contributions are greatly appreciated, be it pull requests, feature requests or bug reports. See
+[ableron.github.io](https://ableron.github.io/) for details.
+
+## License
+
+Licensed under [MIT](./LICENSE).
