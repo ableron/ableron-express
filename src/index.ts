@@ -23,7 +23,7 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
         isIntercepting =
           !(res.statusCode >= 100 && res.statusCode <= 199) &&
           !(res.statusCode >= 300 && res.statusCode <= 399) &&
-          (!res.getHeader('content-type') || isHtmlResponse(res));
+          (!res.get('content-type') || isHtmlResponse(res));
       }
 
       if (isIntercepting && chunk && (typeof chunk === 'string' || Buffer.isBuffer(chunk))) {
@@ -38,7 +38,7 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
         ableron
           .getLogger()
           .debug(
-            `[Ableron] Skipping UI composition (response status: ${res.statusCode}, content-type: ${res.getHeader(
+            `[Ableron] Skipping UI composition (response status: ${res.statusCode}, content-type: ${res.get(
               'content-type'
             )})`
           );
@@ -48,7 +48,7 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
     }
 
     function isHtmlResponse(res: Response) {
-      return /^text\/html/i.test(String(res.getHeader('content-type')));
+      return /^text\/html/i.test(String(res.get('content-type')));
     }
 
     // @ts-ignore
@@ -89,12 +89,12 @@ export default function ableron(config?: Partial<AbleronConfig>, logger?: Logger
               .then((transclusionResult) => {
                 transclusionResult
                   .getResponseHeadersToPass()
-                  .forEach((headerValue, headerName) => res.setHeader(headerName, headerValue));
-                res.setHeader(
+                  .forEach((headerValue, headerName) => res.set(headerName, headerValue));
+                res.set(
                   'Cache-Control',
                   transclusionResult.calculateCacheControlHeaderValueByResponseHeaders(res.getHeaders())
                 );
-                res.setHeader('Content-Length', Buffer.byteLength(transclusionResult.getContent()));
+                res.set('Content-Length', String(Buffer.byteLength(transclusionResult.getContent())));
                 res.status(transclusionResult.getStatusCodeOverride() || res.statusCode);
                 originalEnd.call(res, transclusionResult.getContent(), 'utf8', callbackToPass);
               })
