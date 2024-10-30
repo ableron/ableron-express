@@ -330,7 +330,7 @@ describe('Ableron Express Middleware', () => {
     [false, null]
   ])(
     'should not hook into response when Ableron is disabled',
-    async (ableronEnabled: boolean, expectedLogMessage?: string) => {
+    async (ableronEnabled: boolean, expectedLogMessage: string | null) => {
       // given
       let ableronSkippingUiCompositionLogMessage = null;
       const catchDebugMessageLogger = {
